@@ -1,0 +1,6 @@
+You are here: Home / Exceptions / ValueError: Invalid Literal For int() With Base 10
+ValueError: Invalid Literal For int() With Base 10
+Author: Aditya Raj
+Last Updated: June 16, 2021
+
+Python ValueError: invalid literal for int() with base 10 is an exception which can occur when we attempt to convert a string literal to integer using int() method and the string literal contains characters other than digits. In this article, we will try to understand the reasons behind this exception and will look at different methods to avoid it in our programs.
