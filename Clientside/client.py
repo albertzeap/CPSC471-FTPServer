@@ -24,7 +24,7 @@ def client_interface(sAddress, sPort):
     serverPort = int(sPort)
 
     # File that is being transmitted
-    filename = sys.argv[4]
+    # filename = sys.argv[4]
 
     # Open the file being transmitted
     # fileObj = open(filename, "r")
@@ -46,20 +46,33 @@ def client_interface(sAddress, sPort):
         print("[-] Error connecting ::  %s" %(err))
         exit()
 
-    # command = input ("ftp> ")
     while True:
+
+        # Receive the user command
         command = input ("ftp> ")
+
+        # Count the number of words in the command 
+        numWords = len(command.split())
+
         # Run the get command
-        if  command == "get":
-            print(subprocess.getstatusoutput('get test.txt'))
-            command = input ("ftp> ")
+        if  command.startswith("get") and numWords == 2: 
+
+            # Split the two words 
+            inputtedCommand, filename = command.split()
 
         # Run the put command
-        elif command == "put":
+        elif command.startswith("put") and numWords == 2:
 
-            # Get the file size 
-            filesize = os.path.getsize(filename)
-            print("this is the filesize:", filesize)
+            # Split the two words 
+            inputtedCommand, filename = command.split()
+
+            # Check if file exists and check filesize
+            try:
+                filesize = os.path.getsize(filename)
+                print("This is the filesize:", filesize)
+            except OSError as err: 
+                print("[-] File Error :: %s" %(err))
+                exit()
 
             # List the file that is to be sent
             connSock.send(f"{filename}{SEPARATOR}{filesize}".encode())
@@ -67,20 +80,19 @@ def client_interface(sAddress, sPort):
             # Begin sending the file through the socket 
             progressBar = tqdm.tqdm(range(filesize), f"Sending {filename}", unit="B", unit_scale=True, unit_divisor=1024)
             with open(filename, "rb") as f:
+                
                 while True: 
                     # Read the bytes from the file 
                     bytes_read = f.read(BUFFER_SIZE)
 
-                    # # Update the progress bar
-                    # progressBar.update(len(bytes_read))
-
                     if not bytes_read:
                         # File has finished transmitting
                         break
-                    connSock.sendall(bytes_read)
+                    bytes_sent = connSock.send(bytes_read)
 
                     # Update the progress bar
-                    progressBar.update(len(bytes_read))
+                    # progressBar.update(len(bytes_read))
+            print("Sent:", bytes_sent, "bytes")
 
             # connSock.close()
             # fileObj.close()
@@ -97,7 +109,7 @@ def client_interface(sAddress, sPort):
 
         # Checks for invalid input
         else: 
-            print("Invalid command :: use 'get' 'put' 'ls' 'quit'")
+            print("Invalid command :: use 'get <filename>' 'put <filename>' 'ls' 'quit'")
 
     # connSock.close()
     # fileObj.close()
@@ -137,8 +149,8 @@ def client_interface(sAddress, sPort):
     # fileObj.close()
 
 # Checks for proper amount of arguments
-if len(sys.argv) != 5:
-    print ("USAGE: python " + sys.argv[0] + " cli <server machine> <server port> <filename>" )
+if len(sys.argv) != 4:
+    print ("USAGE: python " + sys.argv[0] + " cli <server machine> <server port>" )
     exit()
 
 # Checks for client mode

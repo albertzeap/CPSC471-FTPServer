@@ -6,7 +6,7 @@ import socket
 host = '0.0.0.0' #this is the local host addres
 listenPort = 1234
 
-#receive 4066 bytes each time
+# Receive 4066 bytes each time
 buffer_size = 4096
 SEPARATOR = " "
 
@@ -51,17 +51,23 @@ def recvAll(sock, numBytes):
 
 
 
-print("waiting for a connection")
-clientSock, addr = welcomeSock.accept()
-print("accepted connection from client: " + str(addr))
-print("\n")
+print("Wating for a connection...")
+
+try:
+	clientSock, addr = welcomeSock.accept()
+	print("[+] Accepted connection from client: " + str(addr))
+	print("\n")
+except socket.error:
+	print ("[-] Error accepting connection ")
 
 received = clientSock.recv(buffer_size).decode()
 print("Received the following: ", received)
 filename, filesize = received.split(SEPARATOR)
-#remove absolute path if there is
+
+# remove absolute path if there is
 filename = os.path.basename(filename)
-#convert to integer
+
+# convert to integer
 filesize = int(filesize)
 
 # start receiving the file from the socket
