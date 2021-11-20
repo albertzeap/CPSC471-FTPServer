@@ -60,6 +60,34 @@ def client_interface(sAddress, sPort):
             # Split the two words 
             inputtedCommand, filename = command.split()
 
+            # Remove absolute path if there is
+            filename = os.path.basename(filename)
+
+            # Convert to integer 
+            filesize = 0
+
+            connSock.send(f"{inputtedCommand}{SEPARATOR}{filename}{SEPARATOR}{filesize}".encode())  
+
+            received = connSock.recv(BUFFER_SIZE).decode()
+
+            # Start receiving the file from the socket 
+            # and writing to the file stream
+            # progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+            with open (filename, "wb") as f: 
+
+                while True:
+				    # Read the bytes from the file 
+                    bytes_read = connSock.recv(BUFFER_SIZE)
+                    if not bytes_read:
+                        # File has finished transmitting 
+                        break
+                    # Write to the file the bytes we just received 
+                    f.write(bytes_read)
+                    # Update progress bar
+                    # progress.update(len(bytes_read))
+            print("[+] SUCCESS")
+            print("Received::", filename)
+
         # Run the put command
         elif command.startswith("put") and numWords == 2:
 
@@ -92,6 +120,7 @@ def client_interface(sAddress, sPort):
 
                     # Update the progress bar
                     # progressBar.update(len(bytes_read))
+            print("[+] SUCCESS")
             print("Sent:", bytes_sent, "bytes")
 
             # connSock.close()

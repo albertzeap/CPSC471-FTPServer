@@ -62,7 +62,7 @@ except socket.error:
 	print ("[-] Error accepting connection ")
 
 received = clientSock.recv(buffer_size).decode()
-print("Received the following: ", received)
+# print("Received the following: ", received)
 
 # Count the number of words
 numWords = len(received.split())
@@ -93,8 +93,36 @@ if numWords == 3:
 				# update the progress bar
 				progress.update(len(bytes_read))
 
+			print("Received ::", filename)
+			print ("Bytes Received::", bytes_read)
+
+
 		# clientSock.close()
 		# welcomeSock.close()
+
+	if command == "get":
+		try:
+			filesize = os.path.getsize(filename)
+			# print("This is the filesize:", filesize)
+		except OSError as err: 
+			print("[-] File Error :: %s" %(err))
+			exit()
+
+			# Begin sending the file through the socket 
+		with open(filename, "rb") as f:
+			print("Sending File::", filename)
+			while True: 
+				# Read the bytes from the file 
+				bytes_read = f.read(buffer_size)
+
+				if not bytes_read:
+					# File has finished transmitting
+					break
+				bytes_sent = clientSock.send(bytes_read)
+
+		print("Sent:", bytes_sent, "bytes")
+
+
 elif numWords == 1:
 
 	command = received
