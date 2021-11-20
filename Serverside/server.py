@@ -1,6 +1,7 @@
 import tqdm
 import os 
 import socket
+import subprocess
 
 # The port on which to listen
 host = '0.0.0.0' #this is the local host addres
@@ -62,29 +63,53 @@ except socket.error:
 
 received = clientSock.recv(buffer_size).decode()
 print("Received the following: ", received)
-filename, filesize = received.split(SEPARATOR)
 
-# remove absolute path if there is
-filename = os.path.basename(filename)
+# Count the number of words
+numWords = len(received.split())
 
-# convert to integer
-filesize = int(filesize)
+if numWords == 3:
+	command, filename, filesize = received.split(SEPARATOR)
 
-# start receiving the file from the socket
-# and writing to the file stream
-progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
-with open(filename, "wb") as f:
-    while True:
-        # read 1024 bytes from the socket (receive)
-        bytes_read = clientSock.recv(buffer_size)
-        if not bytes_read:    
-            # nothing is received
-            # file transmitting is done
-            break
-        # write to the file the bytes we just received
-        f.write(bytes_read)
-        # update the progress bar
-        progress.update(len(bytes_read))
+	if command == "put":
+		# remove absolute path if there is
+		filename = os.path.basename(filename)
+
+		# convert to integer
+		filesize = int(filesize)
+
+		# start receiving the file from the socket
+		# and writing to the file stream
+		progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+		with open(filename, "wb") as f:
+			while True:
+				# read 1024 bytes from the socket (receive)
+				bytes_read = clientSock.recv(buffer_size)
+				if not bytes_read:    
+					# nothing is received
+					# file transmitting is done
+					break
+				# write to the file the bytes we just received
+				f.write(bytes_read)
+				# update the progress bar
+				progress.update(len(bytes_read))
+
+		# clientSock.close()
+		# welcomeSock.close()
+elif numWords == 1:
+
+	command = received
+
+	if command == "ls":
+
+		try:
+			for line in subprocess.getstatusoutput(command):
+				print(line)
+		except subprocess.SubprocessError as err:
+			print("[-] Command Error :: %s" %(err))
+
+else:
+	print ("Command could not be understood")
+
 
 clientSock.close()
 welcomeSock.close()

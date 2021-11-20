@@ -75,7 +75,7 @@ def client_interface(sAddress, sPort):
                 exit()
 
             # List the file that is to be sent
-            connSock.send(f"{filename}{SEPARATOR}{filesize}".encode())
+            connSock.send(f"{inputtedCommand}{SEPARATOR}{filename}{SEPARATOR}{filesize}".encode())
 
             # Begin sending the file through the socket 
             progressBar = tqdm.tqdm(range(filesize), f"Sending {filename}", unit="B", unit_scale=True, unit_divisor=1024)
@@ -101,7 +101,7 @@ def client_interface(sAddress, sPort):
         elif command == "ls":
             # for line in subprocess.getstatusoutput(command):
             #     print(line)
-            connSock.send(command)
+            connSock.send(command.encode())
 
         elif command == "quit":
             connSock.close()
